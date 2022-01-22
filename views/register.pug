@@ -1,0 +1,90 @@
+html 
+    include header.pug
+    link(rel="stylesheet" href="style/login.css" type="text/css")
+    body 
+        div(class="top-area")
+            div(class="welcome-msg-container")
+                h2(class="welcome-msg")="WELCOME TO TIMMY'S TUNES!"
+            div(class="search-container")
+                input(id="searchBar" class="searchBar" type='text' placeholder='  Keyword(s)')
+                button(id="searchButton" class="searchButton" type='button') Search
+            div(class="top-buttons-container")
+                button(class="signInButton" type='button')
+                    a(href="/login") Sign In
+                button(class="registerButton" type='button')
+                    a(href="/register") Register
+                button(class="cartButton" type='button')
+                    a(href="/cart") Cart
+                div(class="cart-count")=totalCart
+        div(class="login-area")
+            h1(class="page-title") Create Account
+            form(class="login-form" action="/register",method='POST')
+                div(class="login-items")
+                    div
+                        label(for="username") Desired Username: 
+                        input(type="text" class="form-control" name="username" id="username" placeholder="Desired Username")
+                    div
+                        label(for="password") Desired Password: 
+                        input(type="password" class="form-control" name="password" id="password" placeholder="Desired Password")
+                //- div
+                input(type="submit" class="login-buttons submit-button" value="Confirm")
+                    //- div
+                button(type="button" class="login-buttons create-button")
+                    a(href="/login") Back
+        div(class="pop-up" id="pop-up-success")
+            span(class="helper")
+            div
+                h1 Account Created! Welcome
+                h3 You will be redirected to the login page shortly..
+        div(class="pop-up" id="pop-up-fail")
+            span(class="helper")
+            div
+                h1 Account already exists
+                h3 You will be redirected to the sign up page shortly..
+    script.
+                $(document).ready(function(){
+                $("#searchButton").on("click", function(event){
+                    console.log("search button is clicked");
+                    event.preventDefault();
+                    let enteredKeywords = $("#searchBar").val();
+                    const keywords = enteredKeywords.split(" ");
+                    window.localStorage.setItem("queryWords",keywords);
+                    window.location="/";
+                })
+            })
+            var sendAlert= #{alertUser}
+            var sendPopUpSuccess = #{sendPopUpSuccess}
+            var sendPopUpFail = #{sendPopUpFail}
+            window.onload = () => {
+                //- console.log(sendAlert);
+                console.log(sendPopUpSuccess);
+                function checkAlert() {
+                    if (sendAlert == true) {
+                        alert("Please do not leave the fields empty")
+                    }
+                }
+            if (sendPopUpSuccess){
+                console.log("send pop up success");
+                document.getElementById("pop-up-success").style.display="block";
+            }
+            if (sendPopUpFail){
+                console.log("send pop up fail");
+                document.getElementById("pop-up-fail").style.display="block";
+
+            }
+                checkAlert()
+            }
+            if (sendPopUpFail){
+                setTimeout(function(){
+                    window.location="/register";
+                },3000);
+            }
+
+            var redirectLogin=#{redirectLogin}
+            if (redirectLogin){
+                setTimeout(function(){
+                window.location = "/login";
+            },3000);
+            }
+
+

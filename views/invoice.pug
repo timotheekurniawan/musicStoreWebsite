@@ -1,0 +1,32 @@
+html
+    include header.pug
+    link(rel="stylesheet" href="style/invoice.css" type="text/css")
+    body
+        h1 Invoice Page
+        div(class="invoice-area")
+            h3(style="color:yellow")="Delivery Details"
+            -var invoiceList=invoiceList
+            p="Full Name: " + invoiceList.name
+            p="Company: " + invoiceList.company
+            p="Address Line 1: "
+            p= invoiceList.address_1
+            p="Address Line 2: "
+            p=invoiceList.address_2
+            p="City: "+invoiceList.city
+            p="Region: "+invoiceList.region
+            p="Country: "+invoiceList.country
+            p="Postcode: "+invoiceList.postcode
+            br
+            br
+            h3(style="color:yellow") Order Summary
+            -var orderList=orderList
+            -var totalPrice = 0
+            -for (var i=0; i<orderList.length; i++)
+                -totalPrice+=orderList[i].price * orderList[i].quantity
+                div(class="item-card")
+                    p=orderList[i].quantity+"x "+ orderList[i].musicName+"    = HK$"+orderList[i].price*orderList[i].quantity
+            p="Total Price: HK$"+totalPrice
+            div(class="thanks-area")
+                p Thank you for ordering! Your music will be delivered within 7 working days
+                button(class="redirect-home")
+                    a(href="/") OK

@@ -1,0 +1,93 @@
+html
+    include header.pug
+    link(rel="stylesheet" href="style/main.css" type="text/css")
+    body
+    div(class="sidebar")
+        div(class ="company-name")
+            h1="Timmy's Tunes"
+        br
+        h2="Category"
+        div(class="sidebar-items")
+            - var categoryList = categoryList
+            - for (var i = 0; i < categoryList.length; i++)
+                - var category = categoryList[i].replace(/\s+/g, '');
+                a(href="/"+category class=`category ${category}-category`)=categoryList[i]
+            //- a(href="/classical" class="classical-category") Classical
+            //- a(href="/baroque" class="baroque-category") Baroque
+            //- a(href="/romantic" class="romantic-category") Romantic
+            //- a(href="/late19th" class="late19th-category") Late 19th
+
+    div(class="main-content")
+        div(class="top-area")
+            div(class="welcome-msg-container")
+                h2(class="welcome-msg")="Hello "+ username +"! What tracks are you looking for?"
+            div(class="search-container")
+                input(id="searchBar" class="searchBar" type='text' placeholder='Keyword(s)')
+                button(id="searchButton" class="searchButton" type='submit') Search
+            div(class="top-buttons-container")
+                -if (loggedIn==false)
+                    button(class="signInButton" type='button')
+                        a(href="/login")="Sign In"
+                    button(class="registerButton" type='button')
+                        a(href="/register") Register
+                    button(class="cartButton" type='button')
+                        a(href="/cart") Cart
+                    div(class="cart-count" id="totalCart")=totalCart
+                -else if (loggedIn==true)
+                    button(class="signInButton" type='button')
+                        a(href="/logout") Logout
+                    button(class="cartButton" type='button')
+                        a(href="/cart") Cart
+                    div(class="cart-count" id="totalCart")=totalCart
+        
+        div(class="directory-area")
+            div(class="directory-links")
+                a(href="/" class="directory-route") Home
+                p=">"
+                p= title
+
+
+        - var musicList = musicList
+        - for (var i=0; i< musicList.length; i++)
+            div(class="selected-music-display") 
+                div(class="selected-img-audio")
+                    img(src="/images/img_"+musicList[i].musicId+".jpg")
+                    audio(controls='' autoplay='')
+                        source(src='/audio/m'+musicList[i].musicId+".mp3" type='audio/mpeg')
+                div(class="selected-info")
+                    h3(style="font-style:italic;text-align:center")="SONG DETAILS: "
+                    p(style="font-weight:bold")="Title: " + musicList[i].musicName
+                    p="Composer: " +musicList[i].composer
+                    p="Published: "+musicList[i].published
+                    p="Category: " +musicList[i].category
+                    p="Description: "
+                    p= musicList[i].description
+                    p(style="font-weight:bold")="Price: $"+musicList[i].price
+                    div(class="add-to-cart-area")
+                        form(class="cart-form" action="/cart" method="post")
+                            label(for="quantity") Order: 
+                            input(type="text" class="cart-input-bar"  id="cartAddQuantity" name="quantity" value=1)
+                            input(type="hidden" name="musicId" value=musicList[i].musicId)
+                            input(type="hidden" name="musicName" value= musicList[i].musicName)
+                            input(type="hidden" name="price" value=musicList[i].price)
+                            input(type="submit"  onClick="updateCartDisplay()" class="add-to-cart-button" value="Add To Cart")
+
+
+    script.
+        $(document).ready(function(){
+            $("#searchButton").on("click", function(event){
+                console.log("search button is clicked");
+                event.preventDefault();
+                let enteredKeywords = $("#searchBar").val();
+                const keywords = enteredKeywords.split(" ");
+                window.localStorage.setItem("queryWords",keywords);
+                window.location="/";
+            })
+        })
+        function updateCartDisplay(){
+            var initCart = Number(document.getElementById("totalCart").innerHTML);
+            var increment = Number(document.getElementById("cartAddQuantity").value);
+            console.log(initCart);
+            console.log(increment);
+            document.getElementById("totalCart").innerHTML = initCart + increment;
+        };

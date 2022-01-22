@@ -1,0 +1,11 @@
+html
+    include header.pug
+    link(rel="stylesheet" href="style/logout.css" type="text/css")
+    body
+    div(class="logout-message")
+        img(src="/images/loading-circle.gif")
+        h2 Logging Out
+    script.
+        setTimeout(function(){
+            window.location="/";
+        },3000);

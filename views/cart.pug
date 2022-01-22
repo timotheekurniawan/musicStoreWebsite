@@ -1,0 +1,101 @@
+html
+    include header.pug
+    link(rel="stylesheet" href="style/cart.css" type="text/css")
+    body
+
+    div(class="main-content")
+        div(class="top-area")
+            div(class="welcome-msg-container")
+                h2(class="welcome-msg")="Hello "+ username +"! What tracks are you looking for?"
+            div(class="search-container")
+                input(id="searchBar" class="searchBar" type='text' placeholder='  Keyword')
+                button(id="searchButton" class="searchButton" type='button') Search
+            div(class="top-buttons-container")
+                -if (loggedIn==false)
+                    button(class="signInButton" type='button')
+                        a(href="/login")="Sign In"
+                    button(class="registerButton" type='button')
+                        a(href="/register") Register
+                    button(class="cartButton" type='button')
+                        a(href="/cart") Cart
+                    div(class="cart-count" id="totalCart")=totalCart
+                -else if (loggedIn==true)
+                    button(class="signInButton" type='button')
+                        a(href="/logout") Logout
+                    button(class="cartButton" type='button')
+                        a(href="/cart") Cart
+                    div(class="cart-count" id="totalCart")=totalCart
+        div(class="cart-area")
+            h1 My Shopping Cart
+            br
+            -var cartList= cartList 
+            -var totalPrice = 0
+            -for (var i=0; i<cartList.length; i++)
+                -var temp = "price_for_"+i
+                p(id=temp class=cartList[i].price style="display:none")=cartList[i].price
+                -totalPrice+=cartList[i].price * cartList[i].quantity
+                div(class="item-card" id="item_card_"+i)
+                    p="Music name: "+cartList[i].musicName 
+                    -var tempId = "quantity_for_"+i
+                    p(id=tempId class=cartList[i].quantity)="Quantity: "+cartList[i].quantity
+                    form(name=i class="delete-item-form" action="/deleteItem" method="post")
+                        input(class="deleted-music"+i type="hidden" name="musicName" value=cartList[i].musicName)
+                        input(class="delete-item-button" type="submit" name=i value="DELETE")
+                    //- button(class="delete-item" type="button" value=i) Delete
+                    hr
+            div(class="total-price")
+                p(style="font-weight:bold")="TOTAL PRICE: $" 
+                p(id="totalPrice")=totalPrice
+        div(class="bottom-area")
+            button(class="back-to-main" type="button")
+                a(href="/") Back
+            button(class="go-to-checkout" type="button")
+                a(href="/checkout") Checkout
+    script. 
+
+
+        $(document).ready(function(){
+            $("#searchButton").on("click", function(event){
+                console.log("search button is clicked");
+                event.preventDefault();
+                let enteredKeywords = $("#searchBar").val();
+                const keywords = enteredKeywords.split(" ");
+                window.localStorage.setItem("queryWords",keywords);
+                window.location="/";
+            })
+            $(".delete-item-form").on("submit",function(event){
+                console.log("form submitted");
+                var formName = $(this).attr("name");
+                console.log(formName);
+                event.preventDefault();
+                let musicName = $(".deleted-music"+formName).val()
+
+                $.ajax({
+                    url:"/deleteItem",
+                    method:"POST",
+                    data: {"musicName": musicName},
+                    success: function(res){
+                        console.log("Hello");
+                    }
+                })
+
+            })
+            $(".delete-item-button").click(function(){
+                var firedButton = this.name;
+                var id = "#item_card_" + firedButton;
+                
+                var initCart = Number(document.getElementById("totalCart").innerHTML);
+                var decrementQuantity = Number(document.getElementById("quantity_for_"+firedButton).className);
+                document.getElementById("totalCart").innerHTML = initCart - decrementQuantity;
+
+
+                var initPrice = Number(document.getElementById("totalPrice").innerHTML);
+                var price = Number(document.getElementById("price_for_"+firedButton).className);
+
+                console.log(initPrice);
+                console.log(price * decrementQuantity);
+                document.getElementById("totalPrice").innerHTML = initPrice - (price * decrementQuantity);
+                $(id).hide();
+            })
+        })
+

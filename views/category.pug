@@ -1,0 +1,81 @@
+html
+    include header.pug
+    link(rel="stylesheet" href="style/main.css" type="text/css")
+    body
+    div(class="sidebar")
+        div(class ="company-name")
+            h1="Timmy's Tunes"
+        br
+        h2="Category"
+        div(class="sidebar-items")
+            - var categoryList = categoryList
+            - for (var i = 0; i < categoryList.length; i++)
+                - var category = categoryList[i].replace(/\s+/g, '');
+                a(href="/"+category class=`category ${category}-category`)=categoryList[i]
+            //- a(href="/classical" class="classical-category") Classical
+            //- a(href="/baroque" class="baroque-category") Baroque
+            //- a(href="/romantic" class="romantic-category") Romantic
+            //- a(href="/late19th" class="late19th-category") Late 19th
+
+    div(class="main-content")
+        div(class="top-area")
+            div(class="welcome-msg-container")
+                h2(class="welcome-msg")="Hello "+ username +"! What tracks are you looking for?"
+            div(class="search-container")
+                input(id="searchBar" class="searchBar" type='text' placeholder='Keyword(s)')
+                button(id="searchButton" class="searchButton" type='submit') Search
+            div(class="top-buttons-container")
+                -if (loggedIn==false)
+                    button(class="signInButton" type='button')
+                        a(href="/login")="Sign In"
+                    button(class="registerButton" type='button')
+                        a(href="/register") Register
+                    button(class="cartButton" type='button')
+                        a(href="/cart") Cart
+                    div(class="cart-count")=totalCart
+                -else if (loggedIn==true)
+                    button(class="signInButton" type='button')
+                        a(href="/logout") Logout
+                    button(class="cartButton" type='button')
+                        a(href="/cart") Cart
+                    div(class="cart-count")=totalCart
+        
+        div(class="directory-area")
+            div(class="directory-links")
+                a(href="/" class="directory-route")="Home " 
+                p=" > "
+                -var categoryName = categoryName
+                if categoryName=="Late 19th"
+                    a(href="/late19th" class="directory-route")=" "+categoryName
+                else
+                    a(href=`/${categoryName}` class="directory-route")=" "+categoryName
+            h1="All "+categoryName
+
+        div(id="music-display-area" class="music-display-area")
+            - var musicList= musicList
+            - for (var i=0; i<musicList.length; i++)
+                div(class="music-card")
+                    div(class="music-title")
+                        //- p= musicList[i].musicName
+                        form(action="/music" method="post")
+                            button(type="submit" name="title" value=`${musicList[i].musicName}`)=musicList[i].musicName
+                    div(class="music-img")
+                        img(src="/images/img_"+musicList[i].musicId+".jpg")
+                    div(class="music-info")
+                        if musicList[i].new_arrival==true
+                            p(class="new-arrival" style="color: red;font-weight:bold") NEW ARRIVAL
+                        else
+                            br
+                        p= "Composer: "+musicList[i].composer
+                        p= "Price: $"+ musicList[i].price
+    script.
+        $(document).ready(function(){
+            $("#searchButton").on("click", function(event){
+                console.log("search button is clicked");
+                event.preventDefault();
+                let enteredKeywords = $("#searchBar").val();
+                const keywords = enteredKeywords.split(" ");
+                window.localStorage.setItem("queryWords",keywords);
+                window.location="/";
+            })
+        })

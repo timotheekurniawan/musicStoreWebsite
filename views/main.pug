@@ -1,0 +1,215 @@
+html
+    include header.pug
+    link(rel="stylesheet" href="style/main.css" type="text/css")
+    body
+    div(class="sidebar")
+        div(class ="company-name")
+            h1="Timmy's Tunes"
+        br
+        h2="Category"
+        div(class="sidebar-items")
+            - var categoryList = categoryList
+            - for (var i = 0; i < categoryList.length; i++)
+                - var category = categoryList[i].replace(/\s+/g, '');
+                a(href="/"+category class=`category ${category}-category`)=categoryList[i]
+            //- a(href="/classical" class="classical-category category") Classical
+            //- a(href="/baroque" class="baroque-category category") Baroque
+            //- a(href="/romantic" class="romantic-category category") Romantic
+            //- a(href="/late19th" class="late19th-category category") Late 19th
+
+    div(class="main-content")
+        div(class="top-area")
+            div(class="welcome-msg-container")
+                h2(class="welcome-msg")="Hello "+ username +"! What tracks are you looking for?"
+            div(class="search-container")
+                input(class="searchBar" id="searchBar" type='text' placeholder='Keyword(s)')
+                button(class="searchButton" id="searchButton" type='button') Search
+            div(class="top-buttons-container")
+                -if (loggedIn==false)
+                    button(class="signInButton" type='button')
+                        a(href="/login")="Sign In"
+                    button(class="registerButton" type='button')
+                        a(href="/register") Register
+                    button(class="cartButton" type='button')
+                        a(href="/cart") Cart
+                    div(class="cart-count")=totalCart
+                -else if (loggedIn==true)
+                    button(class="signInButton" type='button')
+                        a(href="/logout") Logout
+                    button(class="cartButton" type='button')
+                        a(href="/cart") Cart
+                    div(class="cart-count")=totalCart
+        
+        div(class="directory-area")
+            a(href="/" class="directory-route") Home
+            h1(class="header-message") All Music
+
+        div(id="music-display-area" class="music-display-area")
+            - var musicList= musicList
+            - for (var i=0; i<musicList.length; i++)
+                div(class="music-card")
+                    div(class="music-title")
+                        form(action="/music" method="post")
+                            button(type="submit" name="title" value=`${musicList[i].musicName}`)=musicList[i].musicName
+                    div(class="music-img")
+                        img(src="/images/img_"+musicList[i].musicId+".jpg")
+                    div(class="music-info")
+                        if musicList[i].new_arrival==true
+                            p(class="new-arrival" style="color: red;font-weight:bold") NEW ARRIVAL
+                        p= "Composer: "+musicList[i].composer
+                        p= "Price: $"+ musicList[i].price
+    script.
+
+        $(document).ready(function (){
+            var queryKeywords;
+            
+            if (window.localStorage.getItem("queryWords") !=null){
+                var enteredKeywords= window.localStorage.getItem("queryWords");
+                queryKeywords = enteredKeywords.split(",");
+                $.ajax({
+                    url:"/main",
+                    method:"POST",
+                    data:{"keywords": queryKeywords},
+                    success: function (res){
+                        console.log(res.response);
+                        var searchedMusic = res.response;
+                        $(".header-message").html("Searching Result");
+                        $(".music-display-area").empty();
+                        var musicDisplayArea = document.getElementById("music-display-area");
+                        for (var i = 0; i < searchedMusic.length; i++){
+                            var  musicCard = document.createElement("div");
+                            musicCard.className = "music-card";
+
+                            var musicTitle = document.createElement("div");
+                            musicTitle.className = "music-title";
+                            var form = document.createElement("form");
+                            form.action = "/music";
+                            form.method = "POST";
+                            var submitForm = document.createElement("button");
+                            submitForm.type = "submit";
+                            submitForm.name = "title";
+                            submitForm.value = `${searchedMusic[i].musicName}`;
+                            submitForm.innerHTML += `${searchedMusic[i].musicName}`;
+                            form.appendChild(submitForm);
+                            musicTitle.appendChild(form);
+
+                            var musicImg = document.createElement("div");
+                            musicImg.className = "music-img";
+                            var image = document.createElement("img");
+                            image.src= "/images/img_"+searchedMusic[i].musicId+".jpg";
+                            musicImg.appendChild(image);
+
+                            var musicInfo = document.createElement("div");
+                            musicInfo.className = "music-info";
+                            if (searchedMusic[i].new_arrival == true){
+                                var newArrival = document.createElement("p");
+                                newArrival.innerHTML += "NEW ARRIVAL";
+                                newArrival.style.color="red";
+                                newArrival.style.fontWeight="bold";
+                                musicInfo.appendChild(newArrival);
+                            }
+                            else{
+                                var breakLine= document.createElement("br");
+                                musicInfo.appendChild(breakLine);
+                            }
+                            var composer = document.createElement("p");
+                            composer.innerHTML += "Composer: "+ searchedMusic[i].composer;
+                            var price = document.createElement("p");
+                            price.innerHTML += "Price: $"+ searchedMusic[i].price;
+                            musicInfo.appendChild(composer);
+                            musicInfo.appendChild(price);
+
+
+                            musicCard.appendChild(musicTitle);
+                            musicCard.appendChild(musicImg);
+                            musicCard.appendChild(musicInfo);
+
+                            musicDisplayArea.appendChild(musicCard);
+
+                        }
+                    }
+                });
+                window.localStorage.clear();
+            }
+
+            $("#searchButton").on("click", function(event){
+                console.log("search button is clicked");
+                event.preventDefault();
+                let enteredKeywords = $("#searchBar").val();
+                const keywords = enteredKeywords.split(" ");
+                console.log(keywords);
+
+                $.ajax({
+                    url:"/main",
+                    method:"POST",
+                    data:{"keywords": keywords},
+                    success: function (res){
+                        console.log(res.response);
+                        var searchedMusic = res.response;
+                        $(".header-message").html("Searching Result");
+                        $(".music-display-area").empty();
+                        var musicDisplayArea = document.getElementById("music-display-area");
+                        for (var i = 0; i < searchedMusic.length; i++){
+                            var  musicCard = document.createElement("div");
+                            musicCard.className = "music-card";
+
+                            var musicTitle = document.createElement("div");
+                            musicTitle.className = "music-title";
+                            var form = document.createElement("form");
+                            form.action = "/music";
+                            form.method = "POST";
+                            var submitForm = document.createElement("button");
+                            submitForm.type = "submit";
+                            submitForm.name = "title";
+                            submitForm.value = `${searchedMusic[i].musicName}`;
+                            submitForm.innerHTML += `${searchedMusic[i].musicName}`;
+                            form.appendChild(submitForm);
+                            musicTitle.appendChild(form);
+
+                            var musicImg = document.createElement("div");
+                            musicImg.className = "music-img";
+                            var image = document.createElement("img");
+                            image.src= "/images/img_"+searchedMusic[i].musicId+".jpg";
+                            musicImg.appendChild(image);
+
+                            var musicInfo = document.createElement("div");
+                            musicInfo.className = "music-info";
+                            if (searchedMusic[i].new_arrival == true){
+                                var newArrival = document.createElement("p");
+                                newArrival.innerHTML += "NEW ARRIVAL";
+                                newArrival.style.color="red";
+                                newArrival.style.fontWeight="bold";
+                                musicInfo.appendChild(newArrival);
+                            }
+                            else{
+                                var breakLine= document.createElement("br");
+                                musicInfo.appendChild(breakLine);
+                            }
+                            var composer = document.createElement("p");
+                            composer.innerHTML += "Composer: "+ searchedMusic[i].composer;
+                            var price = document.createElement("p");
+                            price.innerHTML += "Price: $"+ searchedMusic[i].price;
+                            musicInfo.appendChild(composer);
+                            musicInfo.appendChild(price);
+
+
+                            musicCard.appendChild(musicTitle);
+                            musicCard.appendChild(musicImg);
+                            musicCard.appendChild(musicInfo);
+
+                            musicDisplayArea.appendChild(musicCard);
+
+
+                        }
+                    }
+                });
+
+                //- $.ajax({
+                //-     url:"/main",
+                //-     method:"POST",
+                //-     data: {"keywords":keywords},
+                //-     success: function(res){
+                //-         console.log("hello");
+                //- })
+            });
+        });
